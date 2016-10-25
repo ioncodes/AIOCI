@@ -14,8 +14,9 @@ for(var i = 0; i < len; i++) {
 }
 var selectedConfigs = readlineSync.question('Please select all CI configs, you want to be installed. (Comma seperated): ').split(',');
 console.log("Preparing installation...");
-console.log("Creating directory...");
-fs.mkdir("C:\\Multi-Runner\\bats");
+console.log("Creating directories...");
+fs.mkdir("C:\\Multi-Runner\\bat");
+fs.mkdir("C:\\Multi-Runner\\bin");
 var len = selectedConfigs.length;
 var settings = new HashMap();
 var downloads = new Array();
@@ -40,6 +41,7 @@ for(var i = 0; i < len; i++) {
     } else {
       settings.set("Nuget", path);
     }
+    downloads.push({url: 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/NET/net_ci.bat', dest: 'bat/net_ci.bat'});
   } else if(config === "Java") {
       var yn = readlineSync.question("Is Java in your PATH? (y/n): ");
       if(yn === 'y') {
@@ -48,6 +50,7 @@ for(var i = 0; i < len; i++) {
         // download java
         tmpDownloads.push("Java"); // ?
       }
+      downloads.push({url: 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/Java/java_ci.bat', dest: 'bat/java_ci.bat'});
   }
 }
 
@@ -79,6 +82,20 @@ download.get(function (err) {
     console.log('DONE');
 });
 
+console.log("Adding to PATH");
+var spawn = require('child_process').spawn, ls = spawn('cmd.exe', ['/c', __dirname + '/tools/path.bat']);
+
+ls.stdout.on('data', function (data) {
+console.log(data);
+});
+
+ls.stderr.on('data', function (data) {
+console.log(data);
+});
+
+ls.on('exit', function (code) {
+console.log('child process exited with code ' + code);
+});
 // setup
 
 console.log("Finished :)");
