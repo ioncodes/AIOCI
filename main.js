@@ -27,7 +27,7 @@ for(var i = 0; i < len; i++) {
     var path = readlineSync.question("Enter the path to 'MSBuild.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      //downloads.push([url: 'https://s3.amazonaws.com/node-webkit/v0.7.5/node-webkit-v0.7.5-win-ia32.zip', dest: 'node-webkit-v0.7.5-win-ia32.zip']);
+      downloads.push([url: 'https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe', dest: 'bin/BuildTools_Full.exe']);
       tmpDownloads.push(".NET");
     } else {
       settings.set(".NET", path);
@@ -35,7 +35,6 @@ for(var i = 0; i < len; i++) {
     path = readlineSync.question("Enter the path to 'Nuget.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      //downloads.push("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
       downloads.push({url: 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe', dest: 'bin/nuget.exe'});
       tmpDownloads.push("Nuget");
     } else {
