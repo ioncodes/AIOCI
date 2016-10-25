@@ -1,0 +1,12 @@
+{
+  "name": "aioci",
+  "version": "0.0.1",
+  "description": "All In One GitLab CI Runner installer",
+  "main": "index.js",
+  "scripts": {
+    "build": "node main.js",
+    "github": "node github.js"
+  },
+  "author": "Luca Marcelli",
+  "license": "ISC"
+}
