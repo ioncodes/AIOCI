@@ -27,7 +27,7 @@ for(var i = 0; i < len; i++) {
     var path = readlineSync.question("Enter the path to 'MSBuild.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      downloads.push([url: 'https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe', dest: 'bin/BuildTools_Full.exe']);
+      downloads.push({url: 'https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe', dest: 'bin/BuildTools_Full.exe'});
       tmpDownloads.push(".NET");
     } else {
       settings.set(".NET", path);
