@@ -2,6 +2,7 @@ var readlineSync = require('readline-sync');
 var fs = require('fs-sync');
 var request = require('sync-request');
 var HashMap = require('hashmap');
+var DownloadProgress = require('download-progress');
 
 console.log("Fetching data...");
 var res = request('GET', 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/configs.txt');
@@ -26,7 +27,7 @@ for(var i = 0; i < len; i++) {
     var path = readlineSync.question("Enter the path to 'MSBuild.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      downloads.push("");
+      //downloads.push([url: 'https://s3.amazonaws.com/node-webkit/v0.7.5/node-webkit-v0.7.5-win-ia32.zip', dest: 'node-webkit-v0.7.5-win-ia32.zip']);
       tmpDownloads.push(".NET");
     } else {
       settings.set(".NET", path);
@@ -34,7 +35,8 @@ for(var i = 0; i < len; i++) {
     path = readlineSync.question("Enter the path to 'Nuget.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      downloads.push("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
+      //downloads.push("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
+      downloads.push({url: 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe', dest: 'bin/nuget.exe'});
       tmpDownloads.push("Nuget");
     } else {
       settings.set("Nuget", path);
@@ -68,7 +70,15 @@ settings.forEach(function(value, key) {
 });
 
 fs.write("settings.ini", JSON.stringify(tmpIni));
-console.log("Finished configuring... Let's start setting up :)");
+console.log("Starting download engine...");
+
+var options = {};
+var download = DownloadProgress(downloads, options);
+
+download.get(function (err) {
+    if (err) { throw new Error(err); }
+    console.log('DONE');
+});
 
 // setup
 
