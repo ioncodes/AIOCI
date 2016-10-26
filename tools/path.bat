@@ -1,1 +1,1 @@
-setx PATH "%PATH%;C:\Multi-Runner\bats" /m
+setx PATH "%PATH%;C:\Multi-Runner\bat" /m

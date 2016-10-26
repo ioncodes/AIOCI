@@ -3,6 +3,9 @@ var fs = require('fs-sync');
 var request = require('sync-request');
 var HashMap = require('hashmap');
 var DownloadProgress = require('download-progress');
+var spawnSync = require('spawn-sync');
+const __BAT = 'C:\\Multi-Runner\\bat';
+const __BIN = 'C:\\Multi-Runner\\bin';
 
 console.log("Fetching data...");
 var res = request('GET', 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/configs.txt');
@@ -15,8 +18,8 @@ for(var i = 0; i < len; i++) {
 var selectedConfigs = readlineSync.question('Please select all CI configs, you want to be installed. (Comma seperated): ').split(',');
 console.log("Preparing installation...");
 console.log("Creating directories...");
-fs.mkdir("C:\\Multi-Runner\\bat");
-fs.mkdir("C:\\Multi-Runner\\bin");
+fs.mkdir(__BAT);
+fs.mkdir(__BIN);
 var len = selectedConfigs.length;
 var settings = new HashMap();
 var downloads = new Array();
@@ -83,19 +86,41 @@ download.get(function (err) {
 });
 
 console.log("Adding to PATH");
-var spawn = require('child_process').spawn, ls = spawn('cmd.exe', ['/c', __dirname + '/tools/path.bat']);
+var result = spawnSync('cmd.exe',
+                       ['/c', __dirname + '/tools/path.bat > log.txt 2>&1']);
 
-ls.stdout.on('data', function (data) {
-console.log(data);
-});
+if (result.status !== 0) {
+  process.stderr.write(result.stderr);
+  process.exit(result.status);
+} else {
+  process.stdout.write(result.stdout);
+  process.stderr.write(result.stderr);
+}
 
-ls.stderr.on('data', function (data) {
-console.log(data);
-});
+console.log("Let's start copying batches!");
+fs.copy('bat/', 'C:\\Multi-Runner\\bat\\', options);
 
-ls.on('exit', function (code) {
-console.log('child process exited with code ' + code);
-});
-// setup
+console.log("Installing files...");
+
+/* MSBuild.exe */
+if(fs.exists('bin/BuildTools_Full.exe')) {
+  console.log('Installing MSBuild...');
+  result = spawnSync('cmd.exe',
+                         ['/c',  __dirname + '/bin/BuildTools_Full.exe /CustomInstallPath '+__BIN+'\\MSBuild\\ > log.txt 2>&1']);
+
+  if (result.status !== 0) {
+    process.stderr.write(result.stderr);
+    process.exit(result.status);
+  } else {
+    process.stdout.write(result.stdout);
+    process.stderr.write(result.stderr);
+  }
+}
+
+/* Nuget */
+if(fs.exists('bin/nuget.exe')) {
+  console.log('Installing Nuget...');
+  fs.copy('bin/nuget.exe', __BIN + '\\Nuget\\nuget.exe');
+}
 
 console.log("Finished :)");
