@@ -1,9 +1,12 @@
 var readlineSync = require('readline-sync');
 var fs = require('fs-sync');
+var fsa = require('fs');
 var request = require('sync-request');
 var HashMap = require('hashmap');
 var DownloadProgress = require('download-progress');
 var spawnSync = require('spawn-sync');
+var wait = require('wait.for');
+var download = require('download');
 const __BAT = 'C:\\Multi-Runner\\bat';
 const __BIN = 'C:\\Multi-Runner\\bin';
 
@@ -22,7 +25,8 @@ fs.mkdir(__BAT);
 fs.mkdir(__BIN);
 var len = selectedConfigs.length;
 var settings = new HashMap();
-var downloads = new Array();
+var binDownloads = new Array();
+var batDownloads = new Array();
 var tmpDownloads = new Array();
 for(var i = 0; i < len; i++) {
   var config = configs[selectedConfigs[i]];
@@ -31,7 +35,7 @@ for(var i = 0; i < len; i++) {
     var path = readlineSync.question("Enter the path to 'MSBuild.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      downloads.push({url: 'https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe', dest: 'bin/BuildTools_Full.exe'});
+      binDownloads.push('https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe');
       tmpDownloads.push(".NET");
     } else {
       settings.set(".NET", path);
@@ -39,12 +43,12 @@ for(var i = 0; i < len; i++) {
     path = readlineSync.question("Enter the path to 'Nuget.exe' (leave blank to install it automatically): ");
     if(path === "") {
       // install & download
-      downloads.push({url: 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe', dest: 'bin/nuget.exe'});
+      binDownloads.push('https://dist.nuget.org/win-x86-commandline/latest/nuget.exe');
       tmpDownloads.push("Nuget");
     } else {
       settings.set("Nuget", path);
     }
-    downloads.push({url: 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/NET/net_ci.bat', dest: 'bat/net_ci.bat'});
+    batDownloads.push('https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/NET/net_ci.bat');
   } else if(config === "Java") {
       var yn = readlineSync.question("Is Java in your PATH? (y/n): ");
       if(yn === 'y') {
@@ -53,7 +57,7 @@ for(var i = 0; i < len; i++) {
         // download java
         tmpDownloads.push("Java"); // ?
       }
-      downloads.push({url: 'https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/Java/java_ci.bat', dest: 'bat/java_ci.bat'});
+      batDownloads.push('https://raw.githubusercontent.com/ioncodes/GitlabYamls/master/Windows/Java/java_ci.bat');
   }
 }
 
@@ -78,11 +82,13 @@ fs.write("settings.ini", JSON.stringify(tmpIni));
 console.log("Starting download engine...");
 
 var options = {};
-var download = DownloadProgress(downloads, options);
 
-download.get(function (err) {
-    if (err) { throw new Error(err); }
-    console.log('DONE');
+Promise.all(binDownloads.map(x => download(x, 'bin'))).then(() => {
+    console.log('Binaries downloaded!');
+});
+
+Promise.all(batDownloads.map(x => download(x, 'bat'))).then(() => {
+    console.log('Batches downloaded!');
 });
 
 console.log("Adding to PATH");
@@ -98,7 +104,7 @@ if (result.status !== 0) {
 }
 
 console.log("Let's start copying batches!");
-fs.copy('bat/', 'C:\\Multi-Runner\\bat\\', options);
+fs.copy('bat/', __BAT, options);
 
 console.log("Installing files...");
 
